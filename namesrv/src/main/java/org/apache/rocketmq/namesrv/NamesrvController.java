@@ -38,7 +38,11 @@ import org.apache.rocketmq.remoting.netty.NettyServerConfig;
 import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
 import org.apache.rocketmq.srvutil.FileWatchService;
 
-
+/**
+ * 接收Broker请求注册
+ * 可能会是服务发现的核心处理器
+ * 即用于接收Broker注册；Producer、Consumer服务发现的核心处理器
+ */
 public class NamesrvController {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
@@ -74,16 +78,21 @@ public class NamesrvController {
     }
 
     public boolean initialize() {
-
+        // 加载NameServer配置信息
         this.kvConfigManager.load();
 
+        // 初始化Netty服务器（核心）
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
 
+        // Netty工作线程池
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
 
+        //把工作线程赋予Netty，即set到remotingServer
         this.registerProcessor();
 
+        // NameServer后台线程任务,可以看到是定时执行
+        // scanNotActiveBroker 通过这个方法可以看出来，扫描哪些broker心跳断开了
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -92,6 +101,7 @@ public class NamesrvController {
             }
         }, 5, 10, TimeUnit.SECONDS);
 
+        // 后台任务 就是打印配置信息而已
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override

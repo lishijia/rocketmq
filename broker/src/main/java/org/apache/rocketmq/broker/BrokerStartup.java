@@ -137,8 +137,8 @@ public class BrokerStartup {
 
                     BrokerPathConfigHelper.setBrokerConfigPath(file);
                     in.close();
-                }
-            }
+        }
+    }
 
             MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), brokerConfig);
 

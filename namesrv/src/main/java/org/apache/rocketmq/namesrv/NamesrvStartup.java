@@ -41,6 +41,9 @@ import org.apache.rocketmq.srvutil.ServerUtil;
 import org.apache.rocketmq.srvutil.ShutdownHookThread;
 import org.slf4j.LoggerFactory;
 
+/**
+ * NameServer启动类
+ */
 public class NamesrvStartup {
 
     private static InternalLogger log;
@@ -48,14 +51,19 @@ public class NamesrvStartup {
     private static CommandLine commandLine = null;
 
     public static void main(String[] args) {
+        // 入口
         main0(args);
     }
 
     public static NamesrvController main0(String[] args) {
 
         try {
+            // NamesrvController 核心组件初始化
             NamesrvController controller = createNamesrvController(args);
+
+            // 启动
             start(controller);
+
             String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
             log.info(tip);
             System.out.printf("%s%n", tip);
@@ -79,8 +87,14 @@ public class NamesrvStartup {
             return null;
         }
 
+        /**
+         * 一下三行代码比较重要核心
+         */
+        // NameServer配置参数初始化
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
+        // NameServer netty服务参数初始化
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
+        // 设置监听端口 即可以看到我们在producer、consumer、broker配置NameServer的时候写的端口号
         nettyServerConfig.setListenPort(9876);
         if (commandLine.hasOption('c')) {
             String file = commandLine.getOptionValue('c');
